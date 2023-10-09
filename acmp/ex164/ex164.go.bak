@@ -1,0 +1,105 @@
+// ex164
+// Билет называется счастливым, если его можно разрезать прямой линией между
+// цифр на две части таким образом, что оказавшиеся на них числа имеют
+// одинаковые цифровые корни. Чтобы вычислить цифровой корень числа,
+// его цифры складывают, если в результате получится число большее или
+// равное 10, то цифры складывают снова и так далее, пока не получится число
+// от 0 до 9 – это и есть цифровой корень. Например, билет с номером 0015420
+// является счастливым, так как разрезав его на части с числами 0015 и 420 имеем
+// у этих чисел одинаковые цифровые корни.
+//
+// Требуется написать программу, которая определит, является ли счастливым
+// билет с заданным номером.
+//
+// Входные данные
+// Входной файл INPUT.TXT содержит номер счастливого билета. Номер может
+// начинаться с нулей и содержит от 1 до 100 цифр.
+//
+// Выходные данные
+// В выходной текстовый файл OUTPUT.TXT выведите «YES», если билет
+// счастливый и «NO» иначе.
+
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+const (
+	INFILE  string = "INPUT.TXT"
+	OUTFILE string = "OUTPUT.TXT"
+)
+
+// Split three digit number int three individual
+// numbers
+func splitDecNumber(num int) (int, int, int) {
+	cnt := num / 100
+	dec := (num - cnt*100) / 10
+	eds := (num - cnt*100 - dec*10)
+
+	return cnt, dec, eds
+}
+
+// split integer into slice of single digits
+func splitInt(n int) []int {
+	slc := []int{}
+	for n > 0 {
+		slc = append(slc, n%10)
+		n = n / 10
+	}
+	return slc
+}
+
+// Function that calculate sum of all digits in
+// number until it sum grater than 10
+func collapseNumber(num int) int {
+	var cn int = num
+	var accum int
+
+	for cn > 10 {
+		digits := splitInt(cn)
+		accum = 0
+		for _, d := range digits {
+			accum = accum + d
+		}
+		cn = accum
+	}
+
+	return cn
+}
+
+func main() {
+	inf, err := os.Open(INFILE)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(0)
+	}
+	defer inf.Close()
+
+	rd := bufio.NewScanner(inf)
+
+	rd.Scan()
+	// trim leading and trailing zeroes
+	line := strings.Trim(rd.Text(), "0")
+
+	var (
+		left, right int
+	)
+
+	for i := 1; i < len([]rune(line)); i++ {
+		left, _ = strconv.Atoi(line[:i])
+		right, _ = strconv.Atoi(line[i:])
+
+		if collapseNumber(left) == collapseNumber(right) {
+			fmt.Println("YES")
+			return
+		}
+	}
+
+	fmt.Println("NO")
+}
